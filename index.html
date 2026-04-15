@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilan Thermique · Meta Ads</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F5F3EE; --surface: #FFFFFF; --surface-2: #EEECE7;
+    --border: rgba(0,0,0,0.08); --text-primary: #1A1916; --text-secondary: #6B6860; --text-muted: #A09D97;
+    --accent: #D64E1E; --accent-light: #FBE9E2;
+    --green: #2C6B3F; --green-light: #E3F2E9;
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+  /* HEADER */
+  .site-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 16px; height: 16px; fill: white; }
+  .logo-text { font-size: 14px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+  .header-meta { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text-primary); text-align: right; line-height: 1.8; font-weight: 500; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 40px; }
+  .tab { padding: 14px 20px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.15s, border-color 0.15s; user-select: none; }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* HERO */
+  .hero { padding: 48px 40px 32px; }
+  .hero-label { font-size: 11px; font-weight: 500; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .hero-title { font-size: 36px; font-weight: 300; letter-spacing: -1px; line-height: 1.15; margin-bottom: 6px; }
+  .hero-title strong { font-weight: 600; }
+  .hero-period { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
+
+  /* KPI */
+  .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin: 0 40px 40px; }
+  .kpi { background: var(--surface); padding: 22px 24px; }
+  .kpi-label { font-size: 11px; font-weight: 500; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .kpi-value { font-size: 28px; font-weight: 600; letter-spacing: -1px; }
+  .kpi-value span { font-size: 14px; font-weight: 400; color: var(--text-secondary); }
+
+  /* SECTION */
+  .section { padding: 0 40px 40px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .section-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: var(--green); }
+  .dot-gray { background: var(--text-muted); }
+  .section-title { font-size: 13px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-secondary); }
+  .section-count { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); background: var(--surface-2); padding: 2px 8px; border-radius: 20px; }
+
+  /* GRID */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+  /* CARD */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+  .card.top-performer { border-color: var(--accent); border-width: 1.5px; }
+  .card-visual { height: 160px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+  .card-visual img { width: 100%; height: 100%; object-fit: cover; }
+  .placeholder-icon { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .placeholder-icon svg { width: 28px; height: 28px; opacity: 0.2; }
+  .placeholder-icon span { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; text-align: center; padding: 0 12px; }
+  .rank-badge { position: absolute; top: 10px; left: 10px; font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; background: var(--accent); color: white; padding: 3px 7px; border-radius: 4px; }
+  .status-pill { position: absolute; top: 10px; right: 10px; font-size: 10px; font-weight: 500; padding: 3px 9px; border-radius: 20px; display: flex; align-items: center; gap: 5px; }
+  .status-pill.active { background: var(--green-light); color: var(--green); }
+  .status-pill.inactive { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+  .status-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .status-pill.active .status-dot { background: var(--green); }
+  .status-pill.inactive .status-dot { background: var(--text-muted); }
+  .card-body { padding: 14px 16px; }
+  .card-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .stat { background: var(--surface-2); border-radius: var(--radius-sm); padding: 8px 10px; }
+  .stat-label { font-size: 9px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 3px; }
+  .stat-value { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .stat-value.empty { color: var(--text-muted); }
+  .stat.highlight { background: var(--accent-light); }
+  .stat.highlight .stat-value { color: var(--accent); }
+  .stat.highlight .stat-label { color: #C1421A; }
+
+  .sep { margin: 0 40px 32px; border: none; border-top: 1px solid var(--border); }
+
+  footer { padding: 24px 40px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  footer p { font-size: 11px; color: var(--text-muted); }
+
+  @media (max-width: 600px) {
+    .site-header, .hero, .section, .tabs { padding-left: 20px; padding-right: 20px; }
+    .kpi-strip { margin-left: 20px; margin-right: 20px; grid-template-columns: 1fr 1fr; }
+    .sep { margin-left: 20px; margin-right: 20px; }
+    footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
+    .hero-title { font-size: 26px; } .kpi-value { font-size: 22px; }
+  }
+
+  /* LIGHTBOX */
+  .lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; cursor: zoom-out; }
+  .lightbox-overlay.open { display: flex; }
+  .lightbox-overlay img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: var(--radius-lg); }
+  .lightbox-close { position: fixed; top: 20px; right: 28px; color: white; font-size: 28px; font-weight: 300; cursor: pointer; line-height: 1; }
+  .card-visual img { cursor: zoom-in; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 2a5 5 0 110 10A5 5 0 018 3zm0 2a3 3 0 100 6A3 3 0 008 5z"/></svg></div>
+    <div>
+      <div class="logo-text">Meta Ads · Rapport de campagne</div>
+      <div class="logo-sub">Aterno France</div>
+    </div>
+  </div>
+  <div class="header-meta">Période : 1 avr. – 14 avr. 2026</div>
+</header>
+
+<nav class="tabs">
+  <div class="tab active" data-tab="cold" onclick="showTab('cold')">Cold Leads</div>
+  <div class="tab" data-tab="retargeting" onclick="showTab('retargeting')">Retargeting</div>
+  <div class="tab" data-tab="solaire" onclick="showTab('solaire')">Solaire</div>
+</nav>
+
+<!-- ===================== COLD LEADS ===================== -->
+<div class="panel active" id="panel-cold">
+  <div class="hero">
+    <div class="hero-label">Campagne · Cold Leads</div>
+    <h1 class="hero-title"><strong>Bilan Thermique</strong></h1>
+    <div class="hero-period">RAD | COLD LEAD | 30-70+ | FR | BILAN THERMIQUE</div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi"><div class="kpi-label">Total leads</div><div class="kpi-value">191</div></div>
+    <div class="kpi"><div class="kpi-label">CPL moyen</div><div class="kpi-value">29,93 <span>€</span></div></div>
+    <div class="kpi"><div class="kpi-label">Dépensé</div><div class="kpi-value">5 717 <span>€</span></div></div>
+    <div class="kpi"><div class="kpi-label">Créas actives</div><div class="kpi-value">7</div></div>
+  </div>
+
+  <!-- EN LIGNE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-dot dot-green"></span>
+      <span class="section-title">En ligne</span>
+      <span class="section-count">7 créas</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="card top-performer">
+        <div class="card-visual"><img src="https://i.imgur.com/UhtAeH5.jpg" data-lightbox="https://i.imgur.com/UhtAeH5.jpg" alt="Image01 - révolution" onerror="this.style.display='none'"><span class="rank-badge">#1 CPL</span><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">Image01 - révolution</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">6</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">12,36 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">74,16 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/YpJwDoo.jpg" data-lightbox="https://i.imgur.com/YpJwDoo.jpg" alt="FB-F-CHAUF-0326-11" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-0326-11</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">67</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">23,94 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">1 604 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/K8HlUww.jpg" data-lightbox="https://i.imgur.com/K8HlUww.jpg" alt="FB-F-CHAUF-0326-13" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-0326-13</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">9</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">25,08 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">225,70 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/YF9JwtF.jpg" data-lightbox="https://i.imgur.com/YF9JwtF.jpg" alt="FB-F-CHAUF-0326-08" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-0326-08</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">98</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">32,45 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">3 180 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/BRK3PbC.jpg" data-lightbox="https://i.imgur.com/BRK3PbC.jpg" alt="Image02 - révolution" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">Image02 - révolution</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">2</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">36,06 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">72,11 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/8UhmMH2.jpg" data-lightbox="https://i.imgur.com/8UhmMH2.jpg" alt="FB-F-CHAUF-0326-09" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-0326-09</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">1</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">48,80 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">48,80 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/WoiGcHC.jpg" data-lightbox="https://i.imgur.com/WoiGcHC.jpg" alt="FB-F-CHAUF-0326-14" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-0326-14</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">75,59 €</div></div></div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ARRÊTÉES COLD -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-dot dot-gray"></span>
+      <span class="section-title">Arrêtées</span>
+      <span class="section-count">9 créas</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/1m9xyDk.jpg" data-lightbox="https://i.imgur.com/1m9xyDk.jpg" alt="FB-F-CHAUF-0326-02" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-0326-02</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">1</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value">10,14 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">10,14 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/BsOIY7S.jpg" data-lightbox="https://i.imgur.com/BsOIY7S.jpg" alt="FB-F-CHAUF-0326-10" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-0326-10</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">6</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value">33,29 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">199,71 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/LRs6dz0.jpg" data-lightbox="https://i.imgur.com/LRs6dz0.jpg" alt="Image01 - salle de bain" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">Image01 - salle de bain</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">1</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value">143,16 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">143,16 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/K8HlUww.jpg" data-lightbox="https://i.imgur.com/K8HlUww.jpg" alt="FB-F-CHAUF-0326-01" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-0326-01</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">43,88 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/eEgy8wT.jpg" data-lightbox="https://i.imgur.com/eEgy8wT.jpg" alt="Image02 - étude gratuite" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">Image02 - étude gratuite</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">19,55 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/HIg5i0k.jpg" data-lightbox="https://i.imgur.com/HIg5i0k.jpg" alt="FB-F-CHAUF-0326-12" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-0326-12</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">11,86 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/JXSkCY3.jpg" data-lightbox="https://i.imgur.com/JXSkCY3.jpg" alt="Image01 - bilan thermique" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">Image01 - bilan thermique</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">2,58 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/BVh6knf.jpg" data-lightbox="https://i.imgur.com/BVh6knf.jpg" alt="FB-F-CHAUF-0326-06" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-0326-06</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">1,49 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/CqwmQ9q.jpg" data-lightbox="https://i.imgur.com/CqwmQ9q.jpg" alt="Image01 - programmable" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">Image01 - programmable</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">3,17 €</div></div></div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===================== RETARGETING ===================== -->
+<div class="panel" id="panel-retargeting">
+  <div class="hero">
+    <div class="hero-label">Campagne · Retargeting</div>
+    <h1 class="hero-title"><strong>Bilan Thermique</strong></h1>
+    <div class="hero-period">RAD | RETARGETING | 40-70+ | FR | BILAN THERMIQUE</div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi"><div class="kpi-label">Total leads</div><div class="kpi-value">43</div></div>
+    <div class="kpi"><div class="kpi-label">CPL moyen</div><div class="kpi-value">46,07 <span>€</span></div></div>
+    <div class="kpi"><div class="kpi-label">Dépensé</div><div class="kpi-value">1 981 <span>€</span></div></div>
+    <div class="kpi"><div class="kpi-label">Créas actives</div><div class="kpi-value">0</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <span class="section-dot dot-gray"></span>
+      <span class="section-title">Arrêtées</span>
+      <span class="section-count">9 créas</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="card top-performer">
+        <div class="card-visual"><img src="https://i.imgur.com/qh87zfk.jpg" data-lightbox="https://i.imgur.com/qh87zfk.jpg" alt="FB-F-CHAUF-RE-0326-04" onerror="this.style.display='none'"><span class="rank-badge">#1 CPL</span><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-RE-0326-04</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">29</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">34,69 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">1 005 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/ZIXzZfP.jpg" data-lightbox="https://i.imgur.com/ZIXzZfP.jpg" alt="FB-F-CHAUF-RE-0326-07" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-RE-0326-07</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">6</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">47,66 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">285,95 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/fdKxC82.jpg" data-lightbox="https://i.imgur.com/fdKxC82.jpg" alt="Image03 - garantie" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">Image03 - garantie</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">6</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">57,07 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">342,42 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/wETH8eh.jpg" data-lightbox="https://i.imgur.com/wETH8eh.jpg" alt="FB-F-CHAUF-RE-0326-03" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-RE-0326-03</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">2</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">85,63 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">171,26 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/xrz7vpj.jpg" data-lightbox="https://i.imgur.com/xrz7vpj.jpg" alt="FB-F-CHAUF-RE-0326-01" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-RE-0326-01</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">78,52 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/MrWRbMu.jpg" data-lightbox="https://i.imgur.com/MrWRbMu.jpg" alt="FB-F-CHAUF-RE-0326-06" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-RE-0326-06</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">36,54 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/vTjdE7e.jpg" data-lightbox="https://i.imgur.com/vTjdE7e.jpg" alt="FB-F-CHAUF-RE-0326-02" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-RE-0326-02</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">33,55 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/8rQcNQs.jpg" data-lightbox="https://i.imgur.com/8rQcNQs.jpg" alt="FB-F-CHAUF-RE-0326-05" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-CHAUF-RE-0326-05</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">25,92 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/oxIi9hL.jpg" data-lightbox="https://i.imgur.com/oxIi9hL.jpg" alt="Image01 - service tout compris" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">Image01 - service tout compris</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">0,49 €</div></div></div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ===================== SOLAIRE ===================== -->
+<div class="panel" id="panel-solaire">
+  <div class="hero">
+    <div class="hero-label">Campagne · Cold Leads</div>
+    <h1 class="hero-title"><strong>Solaire</strong></h1>
+    <div class="hero-period">LEAD FORM 1 | 40-70+ | FR | SOLAIRE</div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi"><div class="kpi-label">Total leads</div><div class="kpi-value">333</div></div>
+    <div class="kpi"><div class="kpi-label">CPL moyen</div><div class="kpi-value">59,09 <span>€</span></div></div>
+    <div class="kpi"><div class="kpi-label">Dépensé</div><div class="kpi-value">19 678 <span>€</span></div></div>
+    <div class="kpi"><div class="kpi-label">Créas actives</div><div class="kpi-value">8</div></div>
+  </div>
+
+  <!-- EN LIGNE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-dot dot-green"></span>
+      <span class="section-title">En ligne</span>
+      <span class="section-count">8 créas</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="card top-performer">
+        <div class="card-visual"><img src="https://i.imgur.com/OwxuyL5.jpg" data-lightbox="https://i.imgur.com/OwxuyL5.jpg" alt="FB-F-FR-SOLAIRE-0326-03" onerror="this.style.display='none'"><span class="rank-badge">#1 CPL</span><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-03</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">22</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">32,88 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">723,32 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/PVP9oZU.jpg" data-lightbox="https://i.imgur.com/PVP9oZU.jpg" alt="FB-F-FR-SOLAIRE-0326-10" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-10</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">139</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">50,20 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">6 978 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/Mx4yP86.jpg" data-lightbox="https://i.imgur.com/Mx4yP86.jpg" alt="FB-F-FR-SOLAIRE-0326-06" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-06</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">13</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">53,60 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">696,84 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/9DOqKdU.jpg" data-lightbox="https://i.imgur.com/9DOqKdU.jpg" alt="FB-F-FR-SOLAIRE-0326-07" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-07</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">97</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">57,44 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">5 572 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/eRsNtCa.jpg" data-lightbox="https://i.imgur.com/eRsNtCa.jpg" alt="FB-F-FR-SOLAIRE-0326-02" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-02</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">7</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">67,15 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">470,07 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/5ahrOZw.jpg" data-lightbox="https://i.imgur.com/5ahrOZw.jpg" alt="FB-F-FR-SOLAIRE-0326-04" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-04</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">7</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">74,02 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">518,17 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/HsXcdlo.jpg" data-lightbox="https://i.imgur.com/HsXcdlo.jpg" alt="FB-F-FR-SOLAIRE-0326-13" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-13</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">26</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">75,77 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">1 970 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/1OWC0DJ.jpg" data-lightbox="https://i.imgur.com/1OWC0DJ.jpg" alt="FB-F-FR-SOLAIRE-0326-05" onerror="this.style.display='none'"><span class="status-pill active"><span class="status-dot"></span>En ligne</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-05</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">4</div></div><div class="stat highlight"><div class="stat-label">CPL</div><div class="stat-value">86,60 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">346,38 €</div></div></div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ARRÊTÉES SOLAIRE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-dot dot-gray"></span>
+      <span class="section-title">Arrêtées</span>
+      <span class="section-count">5 créas</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/0vwqjEQ.jpg" data-lightbox="https://i.imgur.com/0vwqjEQ.jpg" alt="FB-F-FR-SOLAIRE-0326-12" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-12</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value">18</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value">132,08 €</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">2 377 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/ct685rs.jpg" data-lightbox="https://i.imgur.com/ct685rs.jpg" alt="FB-F-FR-SOLAIRE-0326-11" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-11</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">22,03 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/ct685rs.jpg" data-lightbox="https://i.imgur.com/ct685rs.jpg" alt="FB-F-FR-SOLAIRE-0326-01" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-01</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">1,79 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/52bokxD.jpg" data-lightbox="https://i.imgur.com/52bokxD.jpg" alt="FB-F-FR-SOLAIRE-0326-08" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-08</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">1,04 €</div></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-visual"><img src="https://i.imgur.com/YzEvaSK.jpg" data-lightbox="https://i.imgur.com/YzEvaSK.jpg" alt="FB-F-FR-SOLAIRE-0326-09" onerror="this.style.display='none'"><span class="status-pill inactive"><span class="status-dot"></span>Arrêtée</span></div>
+        <div class="card-body"><div class="card-name">FB-F-FR-SOLAIRE-0326-09</div><div class="card-stats"><div class="stat"><div class="stat-label">Leads</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">CPL</div><div class="stat-value empty">—</div></div><div class="stat"><div class="stat-label">Dépensé</div><div class="stat-value">0,37 €</div></div></div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Aterno France · Campagne Bilan Thermique</p>
+  <p>1 avr. – 14 avr. 2026 · Meta Ads Manager</p>
+</footer>
+
+<script>
+
+  function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.dataset && e.target.dataset.lightbox) {
+      openLightbox(e.target.dataset.lightbox);
+    }
+  });
+
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => {
+      if (t.getAttribute('data-tab') === name) t.classList.add('active');
+    });
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+</script>
+
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+  <span class="lightbox-close" onclick="closeLightbox()">&#x2715;</span>
+  <img id="lightbox-img" src="" alt="">
+</div>
+</body>
+</html>
